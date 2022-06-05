@@ -1,1 +1,0 @@
-# fundamentosInformatica2022
