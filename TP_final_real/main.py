@@ -1,80 +1,6 @@
+from VTV import * #menu_operario,visualizar_vehiculos,aprobacion_VTV,vehiculos_API0
 from vehiculos import Motocicleta, Automovil
-from flask import Flask, jsonify
-
-vehiculos_ejemplos = []
-vehiculos_API0 = []
-
-def menu_operario():
-    while True:
-        agregar = input("Desea agregar mas vehiculos o cerrar el sistema? agregar/salir: ")
-        if agregar == "agregar" or agregar == "1":
-            while True:
-                tipo_vehiculo = input("¿Esta analizando un auto o moto?:")
-                if tipo_vehiculo == "moto":
-                    chequeo_moto()
-                    break
-                elif tipo_vehiculo == "auto":
-                    chequeo_auto()
-                    break
-                else:
-                    print("Ingrese bien el vehiculo")
-                    break
-        if agregar == "salir":
-            break
-
-def visualizar_vehiculos():
-    for v in vehiculos_ejemplos:
-        print("-------------------")
-        print(f"Vehiculo número {vehiculos_ejemplos.index(v) + 1}")
-        print("-------------------")
-        print(v.VTV())
-        print("")
-
-def chequeo_moto():
-    print("Ingrese 1 si esta apto, 0 si hay una falla")
-    ruedas = input("Ruedas: ")
-    frenos = input("Frenos: ")
-    gases = input("Gases: ")
-    luces = input("Luces: ")
-    identificacion = input("Identificacion: ")
-    suspension = input("Suspensión: ")
-    cubrecadena = input("Cubrecadena: ")
-    vehiculos_ejemplos.append(Motocicleta(ruedas, frenos, gases, luces, identificacion, suspension, cubrecadena))
-
-def chequeo_auto():
-    print("Ingrese 1 si esta apto, 0 si hay una falla")
-    ruedas = input("Ruedas: ")
-    frenos = input("Frenos: ")
-    gases = input("Gases: ")
-    luces = input("Luces: ")
-    identificacion = input("Identificacion: ")
-    suspension = input("Suspensión: ")
-    sistema_direccion = input("Sistema de dirección: ")
-    seguridad = input("Seguridad: ")
-    chasis = input("Chasis: ")
-    vehiculos_ejemplos.append(Automovil(ruedas, frenos, gases, luces, identificacion, suspension, sistema_direccion, seguridad,
-                              chasis))
-
-
-def aprobacion_VTV():
-    for v in vehiculos_ejemplos:
-        Falla = 0
-        if len(list(v.__dict__.values())) == 7:
-            for n in list(v.__dict__.values()):
-                if n == "0":
-                    Falla +=1
-            if Falla == 0:
-                vehiculos_API0.append(dict({"NroVehiculo" : vehiculos_ejemplos.index(v),"Estado":"Aprobado","Vehiculo":"Motocicleta"}))
-            if Falla != 0:
-                vehiculos_API0.append(dict({"NroVehiculo" : vehiculos_ejemplos.index(v),"Estado":"Rechazado","Vehiculo":"Motocicleta"}))
-        if len(list(v.__dict__.values())) == 9:
-            for n in list(v.__dict__.values()):
-                if n == "0":
-                    Falla +=1
-            if Falla == 0:
-                vehiculos_API0.append(dict({"NroVehiculo" : vehiculos_ejemplos.index(v),"Estado":"Aprobado","Vehiculo":"Automovil"}))
-            if Falla != 0:
-                vehiculos_API0.append(dict({"NroVehiculo" : vehiculos_ejemplos.index(v),"Estado":"Rechazado","Vehiculo":"Automovil"}))
+from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
@@ -83,9 +9,69 @@ visualizar_vehiculos()
 aprobacion_VTV()
 vehiculos_API = vehiculos_API0.copy()
 
+#Este endpoint trae todos los vehiculos
 @app.route("/vehiculos", methods =['GET'])
 def vehiculosGet():
     return jsonify({"vehiculos":vehiculos_API,"status": "ok"})
+
+#Este endpoint requiere un param, y trae un vehiculo en especifico
+@app.route('/vehiculos/<NroVehiculo>', methods=['GET'])
+def vehiculoGet(NroVehiculo):
+    for indice, v in enumerate(vehiculos_API):
+        if v['NroVehiculo'] == NroVehiculo:
+            return jsonify({'NroVehiculo':vehiculos_API[indice], 'busqueda':NroVehiculo, 'status':'ok'})
+    return jsonify({'vehiculos':vehiculos_API, 'status':'not found'})
+
+#Este endpoint agrega un vehiculo
+@app.route('/vehiculos', methods=['POST'])
+def vehhiculoPost():
+    body = request.json
+    estado = body['Estado']
+    nro = body['NroVehiculo']
+    tipo = body['Vehiculo']
+    vehiculoNuevo = {'Estado': estado, 'NroVehiculo': nro,'Vehiculo': tipo}
+    vehiculos_API.append(vehiculoNuevo)
+    return jsonify({'vehiculos':vehiculos_API, 'status':'ok' })
+
+#Este endpoint modifica un vehiculo existente
+@app.route('/vehiculos', methods=['PUT'])
+def vehiculoPut():
+    body = request.json
+    estado = body['Estado']
+    nro = body['NroVehiculo']
+    tipo = body['Vehiculo']
+    for indice, v in enumerate(vehiculos_API):
+        if v['NroVehiculo'] == nro:
+           v['Estado'] = estado
+           v['Vehiculo'] = tipo
+           return jsonify({'Vehiculo': tipo,
+                           'busqueda': nro,
+                           'status': 'ok'})
+
+    return jsonify({'busqueda':vehiculos_API,
+                    'status':'not found' })
+
+#Este endpoint borra un vehiculo
+@app.route('/vehiculos/<NroVehiculo>', methods=['DELETE'])
+def vehiculoDelete(NroVehiculo):
+    for indice, v in enumerate(vehiculos_API):
+        if v['NroVehiculo'] == NroVehiculo:
+            vehiculos_API[indice:indice+1] = []
+            return jsonify({'Vehiculo':v, 'busqueda':NroVehiculo, 'status':'ok'})
+    return jsonify({'vehiculos':vehiculos_API, 'status':'nof found' })
+
+#Este endpoint trae los vehiculos, segun el param que le pases, (Aprobado/Rechazado)
+@app.route('/aprobacion/<estado>', methods=['GET'])
+def tipoGet(estado):
+    vehiculos_estado = {}
+    for v in vehiculos_API:
+        if v['Estado'] == estado:
+            vehiculos_estado[v["NroVehiculo"]] = v['Estado']
+    print(vehiculos_estado)
+    if len(vehiculos_estado) > 0:
+        return(jsonify({f'Vehiculos {estado}':vehiculos_estado, 'busqueda':estado, 'status':'ok'}))
+    else:
+        return jsonify({'vehiculos': vehiculos_API, 'status': 'not found'})
 
 if __name__ == '__main__':
     app.run(debug=True,port=4000)
