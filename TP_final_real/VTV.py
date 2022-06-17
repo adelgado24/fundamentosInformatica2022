@@ -1,7 +1,6 @@
 from vehiculos import Motocicleta, Automovil
 from flask import Flask, jsonify, request
 
-
 vehiculos_ejemplos = []
 vehiculos_API0 = []
 
@@ -59,14 +58,14 @@ def aprobacion_VTV():
                 if n == "0":
                     Falla +=1
             if Falla == 0:
-                vehiculos_API0.append(dict({"NroVehiculo" : str(vehiculos_ejemplos.index(v) + 1),"Estado":"Aprobado","Vehiculo":"Motocicleta"}))
+                vehiculos_API0.append(dict({"ID del Vehiculo" : str(vehiculos_ejemplos.index(v) + 1),"Estado":"Aprobado","Tipo":"Motocicleta"}))
             if Falla != 0:
-                vehiculos_API0.append(dict({"NroVehiculo" : str(vehiculos_ejemplos.index(v) + 1),"Estado":"Rechazado","Vehiculo":"Motocicleta"}))
+                vehiculos_API0.append(dict({"ID del Vehiculo" : str(vehiculos_ejemplos.index(v) + 1),"Estado":"Rechazado","Tipo":"Motocicleta"}))
         if len(list(v.__dict__.values())) == 9:
             for n in list(v.__dict__.values()):
                 if n == "0":
                     Falla +=1
             if Falla == 0:
-                vehiculos_API0.append(dict({"NroVehiculo" : str(vehiculos_ejemplos.index(v) + 1),"Estado":"Aprobado","Vehiculo":"Automovil"}))
+                vehiculos_API0.append(dict({"ID del Vehiculo" : str(vehiculos_ejemplos.index(v) + 1),"Estado":"Aprobado","Tipo":"Automovil"}))
             if Falla != 0:
-                vehiculos_API0.append(dict({"NroVehiculo" : str(vehiculos_ejemplos.index(v) + 1),"Estado":"Rechazado","Vehiculo":"Automovil"}))
+                vehiculos_API0.append(dict({"ID del Vehiculo" : str(vehiculos_ejemplos.index(v) + 1),"Estado":"Rechazado","Tipo":"Automovil"}))
