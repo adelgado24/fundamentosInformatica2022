@@ -1,10 +1,11 @@
 from vehiculos import Motocicleta, Automovil
 from flask import Flask, jsonify, request
+import requests
 
 vehiculos_ejemplos = []
 vehiculos_API0 = []
 
-def menu_operario():            #Cambio en el Menu simplificado
+def menu_operario():
     while True:
         opcion = input("Bienvenido! eljia una opcion para continuar\n1.Agregar un auto\n2.Agregar una moto\n3.Salir\nOpcion: ")
         if opcion == "1":
@@ -69,3 +70,21 @@ def aprobacion_VTV():
                 vehiculos_API0.append(dict({"ID del Vehiculo" : str(vehiculos_ejemplos.index(v) + 1),"Estado":"Aprobado","Tipo":"Automovil"}))
             if Falla != 0:
                 vehiculos_API0.append(dict({"ID del Vehiculo" : str(vehiculos_ejemplos.index(v) + 1),"Estado":"Rechazado","Tipo":"Automovil"}))
+
+#API de 3eros, INCIDENTES VIALES
+#Este request trae datos sobre todos los cortes generados en capital generados por incidentes viales. A modo de ejemplo traimos datos del mes de diciembre de 2020.
+url_incidentes = "https://apitransporte.buenosaires.gob.ar/transito/v1/eventos?month=2020-12&provider=769&client_id=8de4a6411cf04d72a34b3f06f60002c9&client_secret=37fE78571E804261aac6a7834F1Ae64f"
+
+response = requests.get(url_incidentes)
+status_code = response.status_code
+cantidad_incidentes = 0
+
+if status_code == 200:
+    json = response.json()['list']
+    for i in json:
+        if i['type'] != "Manifestación": #De esta manera sacamos los cortes generados por manifestaciones porque no nos sirven como dato para el analisis que queremos realizar
+            cantidad_incidentes += 1
+        else:
+            cantidad_incidentes += 0
+else:
+    print("Error en la solicitudo de la API de incidentes")

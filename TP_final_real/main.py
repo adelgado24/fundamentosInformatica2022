@@ -1,17 +1,21 @@
 from VTV import * #menu_operario,visualizar_vehiculos,aprobacion_VTV,vehiculos_API0
-from vehiculos import Motocicleta, Automovil
 from flask import Flask, jsonify, request
-from BDD import agregar_a_BDD,vehiculos_BDD
+from persistencia_pickles import agregar_a_BDD,vehiculos_BDD, to_csv
+import sqlite3
 
 app = Flask(__name__)
 
+#Menu y nuevos registros
 menu_operario()
 visualizar_vehiculos()
 aprobacion_VTV()
 vehiculos_API = vehiculos_API0.copy()
 
+#Actualizacion de las BDD
 agregar_a_BDD()
+to_csv()
 
+#API
 #Este endpoint trae todos los vehiculos
 @app.route("/vehiculos", methods =['GET'])
 def vehiculosGet():
@@ -74,9 +78,65 @@ def tipoGet(estado):
         if v['Estado'] == estado:
             vehiculos_estado[v["ID del Vehiculo"]] = v['Estado']
     if len(vehiculos_estado) > 0:
-        return(jsonify({f'Vehiculos {estado}':vehiculos_estado, 'busqueda':estado, 'status':'ok'}))
+        return jsonify({f'Vehiculos {estado}':vehiculos_estado, 'busqueda':estado, 'status':'ok'})
     else:
         return jsonify({'vehiculos': vehiculos_BDD, 'status': 'not found'})
+
+@app.route('/incidentes', methods=['GET'])
+def incidentesGet():
+    return jsonify({'Cantidad de incidentes':cantidad_incidentes,'status':'ok'})
+
+#SQL
+
+lista_para_BDD = []
+
+#Convierte los valores de vehiculos_BDD a tuplas para poder insertarlos a la BDD
+def a_tupla():
+    for i in vehiculos_BDD:
+        lista_para_BDD.append(tuple(i.values()))
+
+#Creacion de la base de datos y tabla
+def create_DB():
+    conexion = sqlite3.connect("Bases_de_datos/VTV_BDD.db")
+    conexion.commit()
+    conexion.close()
+
+def create_table():
+    conexion = sqlite3.connect("Bases_de_datos/VTV_BDD.db")
+    cursor = conexion.cursor()
+    sentencia = """
+                CREATE TABLE VTV_BDD (
+                ID INTEGER,
+                Fecha TEXT,
+                Estado TEXT,
+                Tipo TEXT)
+                """
+    cursor.execute(sentencia)
+    conexion.commit()
+    conexion.close()
+
+#Estas dos funciones actualizan los datos de la tabla
+def delete_data():
+    conexion = sqlite3.connect("Bases_de_datos/VTV_BDD.db")
+    cursor = conexion.cursor()
+    sentencia = "DELETE FROM VTV_BDD"
+    cursor.execute(sentencia)
+    conexion.commit()
+    conexion.close()
+
+def add_data():
+    conexion = sqlite3.connect("Bases_de_datos/VTV_BDD.db")
+    cursor = conexion.cursor()
+    sentencia = "INSERT INTO VTV_BDD VALUES (?,?,?,?)"
+    cursor.executemany(sentencia,lista_para_BDD)
+    conexion.commit()
+    conexion.close()
+
+a_tupla()
+#create_DB()
+#create_table()
+delete_data()
+add_data()
 
 if __name__ == '__main__':
     app.run(debug=True,port=4000)

@@ -20,7 +20,6 @@ class Automovil(Vehiculo):
         self.chasis = chasis
 
     def VTV(self):
-        #compra = str.split("Fecha en la que compro el auto(DD/MM/YY): ","/")
         fallas = 0
         for i in self.__dict__.values():
             if i == "0":
