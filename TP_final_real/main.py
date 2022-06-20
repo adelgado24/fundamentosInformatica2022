@@ -84,7 +84,7 @@ def tipoGet(estado):
 
 @app.route('/incidentes', methods=['GET'])
 def incidentesGet():
-    return jsonify({'Cantidad de incidentes':cantidad_incidentes,'status':'ok'})
+    return jsonify({'Cantidad de incidentes en CABA':cantidad_incidentes,'status':'ok'})
 
 #SQL
 

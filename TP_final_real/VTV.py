@@ -1,5 +1,4 @@
 from vehiculos import Motocicleta, Automovil
-from flask import Flask, jsonify, request
 import requests
 
 vehiculos_ejemplos = []
@@ -25,6 +24,7 @@ def visualizar_vehiculos():
         print("-------------------")
         print(v.VTV())
         print("")
+
 
 def chequeo_moto():
     print("Ingrese 1 si esta apto, 0 si hay una falla")

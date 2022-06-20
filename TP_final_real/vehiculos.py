@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date
 
 fecha_aprobada = str(date.today().day) +"/"+ str(date.today().month) +"/"+ str(date.today().year + 1)
 

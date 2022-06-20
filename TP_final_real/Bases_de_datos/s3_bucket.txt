@@ -1,0 +1,2 @@
+link s3 bucket:
+https://tpfinalgr3.s3.sa-east-1.amazonaws.com/registros_csv.csv
